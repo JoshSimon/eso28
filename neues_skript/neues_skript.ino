@@ -14,62 +14,66 @@
 #include <WiFiType.h>
 #include <WiFiUdp.h>
 
+// blynk related libraries
 
+#include <BlynkSimpleEsp32.h>
 
+// global variables
 
+#define analog_pin_thermo_resistor 4 
+#define resolution_analog_port 4090 
+#define voltage_analog_port 3.3
+#define resistance 10 //the value of the pull-down resistor
 
-
-
-
-void listNetworks();
-void printWifiData();
-
-//WifiClient client;
+// wifi configuration
 
 uint64_t chipid;
-char ssid[] = "AndroidAPCBA0";     //  your network SSID (name)
-char pass[] = "sysa5103";  // your network password
+char ssid[] = "IoT-Projekt";     //  your network SSID (name)
+char pass[] = "0112358132134";  // your network password
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 
+// blynk configuration
 
+char auth[] = "6b2a34e0fa234448b6c946b3d7e2529d";
+
+// setup
 
 void setup() {
-  
   Serial.begin(9600);
   listNetworks();
-
-
- while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network:
-    status = WiFi.begin(ssid, pass);
-
-    // wait 10 seconds for connection:
-    delay(10000);
+   while (status != WL_CONNECTED) {
+    tryToConnectToWifi();
   }
  printWifiData();
-
-
- 
+ Blynk.begin(auth, ssid, pass);
 }
 
 
 void loop() {
   while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
+       tryToConnectToWifi();
+  }
+
+  Blynk.run();
+
+ //read thermo resistor value 
+  int reading_temp_sensor  = analogRead(analog_pin_thermo_resistor);
+  //the calculating formula of temperature
+  float tempC = ((((reading_temp_sensor * voltage_analog_port) / resolution_analog_port) - 0.5) * 10);
+  Blynk.virtualWrite(V0, tempC);
+  
+  delay(200); //wait for 100 milliseconds
+ 
+  
+}
+
+void tryToConnectToWifi() {
+  Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network:
     status = WiFi.begin(ssid, pass);
-
-    // wait 1 seconds for connection:
-    delay(1000);
-  }
- //printWifiData();
-  delay(100);
-
-
-  
+    // wait 10 seconds for connection:
+    delay(10000);
 }
 
 void listNetworks() {
