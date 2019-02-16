@@ -16,13 +16,13 @@
 
 // blynk related libraries
 
-#include <BlynkSimpleEsp32.h>
+// #include <BlynkSimpleEsp32.h>
 
 // global variables
 
 #define analog_pin_thermo_resistor 4 
-#define resolution_analoge_port 4090 
-#define voltage_analoge_port 3.3
+#define resolution_analog_port 4090 
+#define voltage_analog_port 3.3
 #define resistance 10 //the value of the pull-down resistor
 
 // wifi configuration
@@ -34,12 +34,7 @@ int status = WL_IDLE_STATUS;     // the Wifi radio's status
 
 // blynk configuration
 
-char auth[] = "6b2a34e0fa234448b6c946b3d7e2529d";
-
-// thingspeak configuration
-
-char server[] = "api.thingspeak.com";
-String writeAPIKey = "2XK2T7DU1SYEK0ZU";
+// char auth[] = "6b2a34e0fa234448b6c946b3d7e2529d";
 
 // setup
 
@@ -50,26 +45,25 @@ void setup() {
     tryToConnectToWifi();
   }
  printWifiData();
- Blynk.begin(auth, ssid, pass);
+// Blynk.begin(auth, ssid, pass);
 }
 
-int measurementNumber = 1;
+
 void loop() {
   while (status != WL_CONNECTED) {
        tryToConnectToWifi();
   }
 
- Blynk.run();
+  // Blynk.run();
 
  //read thermo resistor value 
  // int reading_temp_sensor  = analogRead(analog_pin_thermo_resistor);
   //the calculating formula of temperature
  // float tempC = ((((reading_temp_sensor * voltage_analog_port) / resolution_analog_port) - 0.5) * 10);
- int tempC = 21.0;
- Blynk.virtualWrite(V0, tempC);
- httpRequest(tempC, measurementNumber);
+ // Blynk.virtualWrite(V0, tempC);
+  
   delay(200); //wait for 100 milliseconds
- measurementNumber++;
+ 
   
 }
 
@@ -131,40 +125,4 @@ void printWifiData() {
   Serial.print(":");
   Serial.println(mac[0], HEX);
 
-}
-
-void httpRequest(float field1Data, int field2Data) {
-
-    WiFiClient client;
-    
-    if (!client.connect(server, 80)){
-      
-        Serial.println("connection failed");
-        client.stop();
-        return;     
-    }
-    
-    else{
-        
-        // create data string to send to ThingSpeak
-        String data = "field1=" + String(field1Data) + "&field2=" + String(field2Data); //shows how to include additional field data in http post
-        
-        // POST data to ThingSpeak
-        if (client.connect(server, 80)) {
-          
-            client.println("POST /update HTTP/1.1");
-            client.println("Host: api.thingspeak.com");
-            client.println("Connection: close");
-            client.println("User-Agent: ESP32WiFi/1.1");
-            client.println("X-THINGSPEAKAPIKEY: "+writeAPIKey);
-            client.println("Content-Type: application/x-www-form-urlencoded");
-            client.print("Content-Length: ");
-            client.print(data.length());
-            client.print("\n\n");
-            client.print(data);
-            
-            Serial.println("RSSI = " + String(field1Data));
-        }
-    }
-    client.stop();
 }
